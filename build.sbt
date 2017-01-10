@@ -7,6 +7,7 @@ scalaVersion := "2.11.8"
 
 version := "1.0.0"
 
+resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases") //add resolver
 
 def generateIndexTask(index: String, suffix: String) = Def.task {
   val source = baseDirectory.value / "index-template.html"
@@ -38,16 +39,16 @@ Seq(
     task <<= task.dependsOn(generateIndexTask(indexHtml, postfix), copyCss)
 }
 
-libraryDependencies += "be.doeraene" %%% "scalajs-jquery" % "0.9.0"
+mainClass in Compile :=Some("Main")
+
+libraryDependencies += "org.querki" %%% "jquery-facade" % "1.0"
+
+jsDependencies += "org.webjars" % "jquery" % "2.2.1" / "jquery.js" minified "jquery.min.js"
+
+libraryDependencies += "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7" //add dependency
 
 skip in packageJSDependencies := false
 
 persistLauncher in Compile := true
 
 persistLauncher in Test := false
-
-// jsDependencies += "org.webjars" % "jquery" % "2.1.4" / "2.1.4/jquery.js"
-
-jsDependencies += "org.webjars" % "jquery" % "1.10.2" / "jquery.js"
-
-jsDependencies += "org.webjars" % "jquery-ui" % "1.11.4" / "jquery-ui.js" dependsOn "jquery.js"
