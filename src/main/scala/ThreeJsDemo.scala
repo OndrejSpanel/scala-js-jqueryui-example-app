@@ -1,9 +1,7 @@
 import org.denigma.threejs._
-import org.denigma.threejs.extensions.controls.{CameraControls, JumpCameraControls}
-import org.denigma.threejs.extras.HtmlSprite
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.raw.{HTMLElement, HTMLTextAreaElement}
+import org.scalajs.dom.raw.HTMLElement
 
 import scala.scalajs.js
 import scala.util.Random
@@ -20,7 +18,7 @@ trait Container3D extends SceneContainer
 
   override type RendererType =  WebGLRenderer
 
-  protected def initRenderer= {
+  protected def initRenderer() = {
     val params = Dynamic.literal(
       antialias = true,
       alpha = true
@@ -35,11 +33,14 @@ trait Container3D extends SceneContainer
     vr.setSize(width,height)
     vr
   }
-  val  cssScene = new Scene()
+  val cssScene = new Scene()
+
+  val controls: CameraControls = new HoverControls(camera, this.container)
 
   container.appendChild( renderer.domElement )
 
   override def onEnterFrame() = {
+    controls.update()
     renderer.render( scene, camera )
   }
 
@@ -115,6 +116,8 @@ class ExampleScene(val container: HTMLElement, val width: Double, val height: Do
   def randColorName: String = colors(Random.nextInt(colors.size))
 
   var meshes = addMesh(new Vector3(0, 0, 0)) :: addMesh(new Vector3(400, 0, 200)) :: addMesh(new Vector3(-400, 0, 200)) :: Nil
+
+  override val controls: CameraControls = new ExampleControls(camera, this.container, scene, width, height, this.meshes.head.position.clone())
 
   val light = new DirectionalLight(0xffffff, 2)
   light.position.set(1, 1, 1).normalize()
