@@ -1,5 +1,4 @@
 import org.denigma.threejs._
-import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.{CameraControls, JumpCameraControls}
 import org.denigma.threejs.extras.HtmlSprite
 import org.scalajs.dom
@@ -9,7 +8,88 @@ import org.scalajs.dom.raw.{HTMLElement, HTMLTextAreaElement}
 import scala.scalajs.js
 import scala.util.Random
 import org.scalajs.dom
-import org.scalajs.dom.raw.HTMLTextAreaElement
+
+import scala.scalajs.js.Dynamic
+
+trait Container3D extends SceneContainer
+{
+
+  container.style.width = width.toString
+  container.style.height = height.toString
+  container.style.position = "relative"
+
+  override type RendererType =  WebGLRenderer
+
+  protected def initRenderer= {
+    val params = Dynamic.literal(
+      antialias = true,
+      alpha = true
+      //canvas = container
+    ).asInstanceOf[ WebGLRendererParameters]
+    val vr = new WebGLRenderer(params)
+
+    vr.domElement.style.position = "absolute"
+    vr.domElement.style.top	  = "0"
+    vr.domElement.style.margin	  = "0"
+    vr.domElement.style.padding  = "0"
+    vr.setSize(width,height)
+    vr
+  }
+  val  cssScene = new Scene()
+
+  container.appendChild( renderer.domElement )
+
+  override def onEnterFrame() = {
+    renderer.render( scene, camera )
+  }
+
+}
+
+trait SceneContainer{
+
+  val container: HTMLElement
+
+  def width:Double
+
+  def height:Double
+
+  type RendererType <:Renderer
+
+  val scene = new Scene()
+
+  def distance:Double = 2000
+
+  lazy val renderer: RendererType = this.initRenderer()
+
+  lazy val camera = initCamera()
+
+  def aspectRatio = width /height
+
+  protected def initRenderer():RendererType
+
+  protected def initCamera() =
+  {
+    val camera = new PerspectiveCamera(40, this.aspectRatio, 1, 1000000)
+    camera.position.z = distance
+    camera
+  }
+
+  protected def onEnterFrameFunction(double: Double): Unit = {
+    onEnterFrame()
+    render()
+  }
+
+  def onEnterFrame():Unit = {
+    renderer.render(scene, camera)
+  }
+
+  def render() =  dom.window.requestAnimationFrame(  onEnterFrameFunction _ )
+
+}
+
+
+
+
 
 object ThreeJsDemo {
 
@@ -26,7 +106,7 @@ class ExampleScene(val container: HTMLElement, val width: Double, val height: Do
 
   val colors = List("green", "red", "blue", "orange", "purple", "teal")
   val colorMap = Map(colors.head -> 0xA1CF64, colors(1) -> 0xD95C5C, colors(2) -> 0x6ECFF5,
-    colors(3) -> 0xF05940, colors(4) -> 0x564F8A, colors.tail -> 0x00B5AD)
+    colors(3) -> 0xF05940, colors(4) -> 0x564F8A, colors.last -> 0x00B5AD)
 
   def materialParams(name: String): MeshLambertMaterialParameters = js.Dynamic.literal(
     color = new Color(colorMap(name)) // wireframe = true
@@ -35,8 +115,6 @@ class ExampleScene(val container: HTMLElement, val width: Double, val height: Do
   def randColorName: String = colors(Random.nextInt(colors.size))
 
   var meshes = addMesh(new Vector3(0, 0, 0)) :: addMesh(new Vector3(400, 0, 200)) :: addMesh(new Vector3(-400, 0, 200)) :: Nil
-
-  override val controls: CameraControls = new ExampleControls(camera, this.container, scene, width, height, this.meshes.head.position.clone())
 
   val light = new DirectionalLight(0xffffff, 2)
   light.position.set(1, 1, 1).normalize()

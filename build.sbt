@@ -1,7 +1,7 @@
 // Turn this project into a Scala.js project by importing these settings
 enablePlugins(ScalaJSPlugin)
 
-name := "Scala.js Example with jQueryUI"
+name := "Three.js Example"
 
 scalaVersion := "2.11.8"
 
@@ -46,6 +46,8 @@ libraryDependencies += "org.querki" %%% "jquery-facade" % "1.0"
 jsDependencies += "org.webjars" % "jquery" % "2.2.1" / "jquery.js" minified "jquery.min.js"
 
 libraryDependencies += "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7" //add dependency
+
+jsDependencies += "org.webjars.bower" % "three.js" % "0.77.0" / "three.js" minified "three.min.js"
 
 skip in packageJSDependencies := false
 
